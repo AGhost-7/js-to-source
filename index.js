@@ -9,6 +9,10 @@ function tabs(ln, tabChar) {
 	return str;
 }
 
+function defaultFnFormatter() {
+	return 'function() {}';
+}
+
 /**
  * Turns code back into source! Doesn't support functions or comments though.
  *
@@ -27,15 +31,17 @@ function tabs(ln, tabChar) {
  * argument is not specified the default will be an empty function.
  */
 function toSource(data, tabDepth, quoteDepth, brackets, tabChar, functionFormatter) {
+	
+	if(quoteDepth === undefined) quoteDepth = 0;
+	if(tabDepth === undefined) tabDepth = 0;
+
 	// By default, brackets should be added at both ends of the object or array.
 	if(brackets === undefined) brackets = true;
 
-	if(!tabChar) tabChar = '\t';
+	if(tabChar === undefined) tabChar = '\t';
 
 	if(functionFormatter === undefined) {
-		functionFormatter = function() {
-			return 'function() {}';
-		};
+		functionFormatter = defaultFnFormatter;
 	}
 
 	switch(typeof data) {
@@ -47,7 +53,7 @@ function toSource(data, tabDepth, quoteDepth, brackets, tabChar, functionFormatt
 			if(Array.isArray(data)) {
 				inner = data.map(function(part) {
 					var src = toSource(part, tabDepth + 1, quoteDepth - 1, true, tabChar, functionFormatter);
-					return tabs(tabDepth + 1) + src;
+					return tabs(tabDepth + 1, tabChar) + src;
 				}).join(',\n');
 				
 				if(brackets) {
@@ -79,9 +85,7 @@ function toSource(data, tabDepth, quoteDepth, brackets, tabChar, functionFormatt
 			}
 			break;
 
-		case 'number':
-			return data;
-
+		case 'number': return data;
 	}
 }
 

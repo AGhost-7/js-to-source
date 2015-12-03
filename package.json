@@ -1,21 +1,25 @@
 {
-	"name": "to-source",
-	"version": "1.0.1",
-	"description": "Convert your objects back to text.",
-	"main": "index.js",
-	"scripts": {
-		"test": "mocha"
-	},
-	"keywords": [
-		"toSource"
-	],
-	"author": "Jonathan Boudreau",
-	"bugs": {
-		"url": "https://github.com/AGhost-7/js-to-source/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/AGhost-7/js-to-source.git"
-	},
-	"license": "MIT"
+  "name": "to-source",
+  "version": "1.0.1",
+  "description": "Convert your objects back to text.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "toSource"
+  ],
+  "author": "Jonathan Boudreau",
+  "bugs": {
+    "url": "https://github.com/AGhost-7/js-to-source/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AGhost-7/js-to-source.git"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "mocha": "^2.3.4"
+  }
 }
