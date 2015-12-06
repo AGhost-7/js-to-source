@@ -31,7 +31,9 @@ describe('simple types', function() {
 
 	it('parses dates', function() {
 		var d = new Date();
-		expect(toSource(d)).to.contain('new Date(');
+		var sourced = toSource(d);
+		 
+		expect(eval(sourced).getTime()).to.equal(d.getTime());
 	});
 
 	it('parses regular expressions', function() {
