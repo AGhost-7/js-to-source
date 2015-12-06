@@ -1,7 +1,7 @@
 var expect = require('chai').expect;
 var toSource = require('../index');
 
-describe('to source', function() {
+describe('complex types (arrays and objects)', function() {
 	'use strict';
 
 	it('will output simple structures with functioning defaults', function() {
@@ -53,7 +53,7 @@ describe('to source', function() {
 				c: 2
 			}
 		};
-		var output = toSource(obj, -1, 0, false);
+		var output = toSource(obj, { tabDepth: -1, enclose: false });
 		expect(output).to.not.contain('{\n\ta');
 		expect(output).to.contain('\tc');
 	});

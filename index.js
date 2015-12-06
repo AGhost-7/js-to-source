@@ -13,6 +13,45 @@ function defaultFnFormatter() {
 	return 'function() {}';
 }
 
+function objectToSource(data, tabDepth, quoteDepth, brackets, tabChar, quoteChar, functionFormatter) {
+	var str = '{\n';
+	var objListing = Object.keys(data).map(function(key) {
+		var 
+			sourced = toSource(data[key], tabDepth + 1, quoteDepth - 1, true, 
+				tabChar, quoteChar, functionFormatter),
+			literalKey = quoteDepth > 0 ? '\'' + key + '\'' : key,
+			base = tabs(tabDepth + 1, tabChar) + literalKey + ': ';
+		return base + sourced;
+	});
+
+	var inner = objListing.join(',\n');
+	if(brackets) {
+		return '{\n' + 
+			inner + '\n' + 
+			tabs(tabDepth, tabChar) + '}';
+	} else {
+		return inner;
+	}
+
+}
+
+function arrayToSource(data, tabDepth, quoteDepth, brackets, tabChar, quoteChar, functionFormatter) {
+	var inner = data.map(function(part) {
+		var src = toSource(part, tabDepth + 1, quoteDepth - 1, true, tabChar,								 
+			quoteChar, functionFormatter);
+		return tabs(tabDepth + 1, tabChar) + src;
+	}).join(',\n');
+	
+	if(brackets) {
+		return '[\n' +
+			inner + '\n' +
+			tabs(tabDepth, tabChar) + ']';
+	} else {
+		return inner;
+	}
+
+}
+
 /**
  * Turns code back into source! Doesn't support functions or comments though.
  *
@@ -30,63 +69,47 @@ function defaultFnFormatter() {
  * formatter, from there you will need to source it and change the format to preference. If this
  * argument is not specified the default will be an empty function.
  */
-function toSource(data, tabDepth, quoteDepth, brackets, tabChar, functionFormatter) {
-	
-	if(quoteDepth === undefined) quoteDepth = 0;
-	if(tabDepth === undefined) tabDepth = 0;
-
-	// By default, brackets should be added at both ends of the object or array.
-	if(brackets === undefined) brackets = true;
-
-	if(tabChar === undefined) tabChar = '\t';
-
-	if(functionFormatter === undefined) {
-		functionFormatter = defaultFnFormatter;
-	}
-
+function toSource(data, tabDepth, quoteDepth, brackets, tabChar, quoteChar, functionFormatter) {
 	switch(typeof data) {
 		case 'function': return functionFormatter(tabDepth, data);
+		case 'number':
+		case 'undefined':
 		case 'boolean': return '' + data;
-		case 'string': return '\'' + data + '\'';
+		case 'string': return quoteChar + data + quoteChar;
 		case 'object':
 			var inner;
 			if(Array.isArray(data)) {
-				inner = data.map(function(part) {
-					var src = toSource(part, tabDepth + 1, quoteDepth - 1, true, tabChar, functionFormatter);
-					return tabs(tabDepth + 1, tabChar) + src;
-				}).join(',\n');
-				
-				if(brackets) {
-					return '[\n' +
-						inner + '\n' +
-						tabs(tabDepth, tabChar) + ']';
-				} else {
-					return inner;
-				}
-
+				return arrayToSource.apply(null, arguments);
+			} else if(data === null) {
+				// null is an object lol.
+				return 'null';
+			} else if(data instanceof Date) {
+				return 'new Date(' + data.getTime() + ')';
+			}	else if(data instanceof RegExp) {
+				return data.toString();
 			} else {
-				var str = '{\n';
-				var objListing = Object.keys(data).map(function(key) {
-					var 
-						sourced = toSource(data[key], tabDepth + 1, quoteDepth - 1, true, tabChar, functionFormatter),
-						literalKey = quoteDepth > 0 ? '\'' + key + '\'' : key,
-						base = tabs(tabDepth + 1, tabChar) + literalKey + ': ';
-					return base + sourced;
-				});
-
-				inner = objListing.join(',\n');
-				if(brackets) {
-					return '{\n' + 
-						inner + '\n' + 
-						tabs(tabDepth, tabChar) + '}';
-				} else {
-					return inner;
-				}
+				return objectToSource.apply(null, arguments);
 			}
 			break;
 
-		case 'number': return data;
 	}
 }
 
-module.exports = toSource;
+// Wrap the toSource function to add in defaults.
+module.exports = function (data, options) {
+	options = options || {};
+	var defaulted = [
+		['tabDepth', 0],
+		['quoteDepth', 0],
+		['enclose', true],
+		['tabChar', '\t'],
+		['quoteChar', '\''],
+		['functionFormatter', module.exports.defaultFnFormatter]
+	].map(function(tuple) {
+		return options[tuple[0]] === undefined ? tuple[1] : options[tuple[0]];
+	});
+	return toSource.apply(null, [data].concat(defaulted));
+
+};
+
+module.exports.defaultFnFormatter = defaultFnFormatter;
