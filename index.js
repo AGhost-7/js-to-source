@@ -13,6 +13,52 @@ function defaultFnFormatter() {
 	return 'function() {}';
 }
 
+function simpleFnFormatter(depth, fn) {
+	return fn.toString();
+}
+
+function mkFnFormatter(tabChar) {
+	if(tabChar === undefined) tabChar = '\t';
+	return function(tabDepth, fn) {
+		var
+			sourced = fn.toString(),
+			src = sourced.split('\n');
+
+		// Start by finding the height that the function is currently indented at.
+		// I will need this to adjust the indentation.
+		var 
+			lastLine = src[src.length - 1],
+			currentH = lastLine.match('^(' + tabChar + ')*')[0].length;
+
+		// No need to reindent if its already at the proper height.
+		if(currentH === tabDepth) {
+			return sourced;
+		}
+
+		// Relying on standard writing style, I shouldn't need to indent the first
+		// line.
+		var 
+			tail = src.slice(1),
+			corrected;
+
+		// I need to add indentation.
+		if(currentH < tabDepth) {
+			var addTabs = tabDepth - currentH;
+			corrected = tail.map(function(line) {
+				return tabs(addTabs, tabChar);
+			});
+		} else {
+			// remove indentation.
+			var removeChars = currentH - tabDepth;
+			corrected = tail.map(function(line) {
+				return line.substring(removeChars);
+			});
+		}
+		return src[0] + '\n' +
+			corrected.join('\n');//[src[0]].concat(spaced).join('\n');
+	};
+}
+
 function objectToSource(data, tabDepth, quoteDepth, brackets, tabChar, quoteChar, functionFormatter) {
 	var str = '{\n';
 	var objListing = Object.keys(data).map(function(key) {
@@ -113,3 +159,5 @@ module.exports = function (data, options) {
 };
 
 module.exports.defaultFnFormatter = defaultFnFormatter;
+module.exports.mkFnFormatter = mkFnFormatter;
+module.exports.simpleFnFormatter = simpleFnFormatter;

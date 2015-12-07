@@ -2,6 +2,9 @@
 Turns code back into source! Doesn't support functions (but you can override
 that) or comments though.
 
+This is currently used for code generation, hence why you have more control
+over how the output is going to look like.
+
 ## Parameters
 
 - `any` _data_ This is the javascript value to convert back into source text.
@@ -26,3 +29,25 @@ will be an empty function.
 - `string` _quoteChar_ This will specify what kind of character to use to
 escape keys in objects and what to use for strings. By default, this is a
 single quote.
+
+## Overriding the default function serializer
+You can override the default formatter globally. A utility function is provided
+which can make a decent serializer that should indent things properly for most
+use cases.
+
+```javascript
+var toSource = require('to-source');
+
+// By default mkFnFormatter will use tabs, but you can specify what kind of
+// character you want to use for a single indentation level.
+toSource.defaultFnFormatter = toSource.mkFnFormatter();
+
+var example = function() {
+	return 'foobar';
+};
+
+toSource(example); // -> outputs the whole function!
+```
+
+Preferably, you should use a proper code formatter like `beautify-js` to format
+the function block. This is why you can specify your own formatter.
