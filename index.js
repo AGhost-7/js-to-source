@@ -3,6 +3,8 @@
 
 'use strict';
 
+var fnToStr = require('./lib/fn-to-str');
+
 function tabs(ln, tabChar) {
 	var str = '';
 	for(var i = 0; i < ln; i++) str += tabChar;
@@ -14,14 +16,14 @@ function defaultFnFormatter() {
 }
 
 function simpleFnFormatter(depth, fn) {
-	return fn.toString();
+	return fnToStr(fn);
 }
 
 function mkFnFormatter(tabChar) {
 	if(tabChar === undefined) tabChar = '\t';
 	return function(tabDepth, fn) {
 		var
-			sourced = fn.toString(),
+			sourced = fnToStr(fn),
 			src = sourced.split('\n');
 
 		// Start by finding the height that the function is currently indented at.

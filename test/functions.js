@@ -1,5 +1,8 @@
+/* jshint expr: true */
+
 var expect = require('chai').expect;
 var toSource = require('../index');
+var fnToStr = require('../lib/fn-to-str');
 
 describe('function support', function() {
 	// mock function
@@ -55,5 +58,22 @@ describe('function support', function() {
 		});
 
 		expect(sourced.split('\n')[4]).to.match(/^\t{2}[}]/);
+	});
+
+	it('should be able to detect which functions are native', function() {
+		var isNative = fnToStr.isNativeFn;
+		expect(isNative(Date.now)).to.be.true;
+		expect(isNative(function() {})).to.be.false;
+		expect(isNative(Math.log)).to.be.true;
+	});
+
+	it('should be able to output native functions', function() {
+		expect(fnToStr(Math.log)).to.be.equal('Math.log');
+		expect(fnToStr(Object.defineProperty)).to.be.equal('Object.defineProperty');
+
+		var sourced = toSource(Object.keys, {
+			functionFormatter: formatter
+		});
+		expect(sourced).to.contain('Object.keys');
 	});
 });
