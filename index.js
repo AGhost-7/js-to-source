@@ -1,5 +1,3 @@
-/* jshint node: true */
-
 'use strict'
 
 var fnToStr = require('./lib/fn-to-str')
