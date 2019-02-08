@@ -75,10 +75,13 @@ function escape(str, quoteChar) {
   return escaped
 }
 
+function shouldQuote(key) {
+  return !/^[a-z0-9_]+$/i.test(key);
+}
+
 function objectToSource(
   data,
   tabDepth,
-  quoteDepth,
   brackets,
   tabChar,
   quoteChar,
@@ -88,14 +91,13 @@ function objectToSource(
     var sourced = toSource(
       data[key],
       tabDepth + 1,
-      quoteDepth - 1,
       true,
       tabChar,
       quoteChar,
       functionFormatter
     )
 
-    var literalKey = quoteDepth > 0 ? "'" + key + "'" : key
+    var literalKey = shouldQuote(key) ? quoteChar + escape(key) + quoteChar : key
 
     var base = tabs(tabDepth + 1, tabChar) + literalKey + ': '
     return base + sourced
@@ -112,7 +114,6 @@ function objectToSource(
 function arrayToSource(
   data,
   tabDepth,
-  quoteDepth,
   brackets,
   tabChar,
   quoteChar,
@@ -123,7 +124,6 @@ function arrayToSource(
       var src = toSource(
         part,
         tabDepth + 1,
-        quoteDepth - 1,
         true,
         tabChar,
         quoteChar,
@@ -145,8 +145,6 @@ function arrayToSource(
  *
  * @param {string} data; This is the javascript value to convert back into source text.
  * @param {number} tabDepth; Is the indentation level that the value is starting at.
- * @param {number} quoteDepth; Specifies how far deep into the object you want the key to be single
- * quoted.
  * @param {boolean} brackets; If false, the object output won't have the openeing and closing
  * brackets. This is useful is you want to insert the output into an existing object.
  * @param {string} tabChar; specifies what to use for the height character. By default this will
@@ -160,7 +158,6 @@ function arrayToSource(
 function toSource(
   data,
   tabDepth,
-  quoteDepth,
   brackets,
   tabChar,
   quoteChar,
@@ -196,7 +193,6 @@ module.exports = function(data, options) {
   options = options || {}
   var defaulted = [
     ['tabDepth', 0],
-    ['quoteDepth', 0],
     ['enclose', true],
     ['tabChar', '\t'],
     ['quoteChar', "'"],
