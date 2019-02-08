@@ -13,8 +13,6 @@ options to modify the output along with the defaults.
 
 ## Options
 - `number` _tabDepth_ Is the indentation level that the value is starting at.
-- `number` _quoteDepth_ Specifies how far deep into the object you want the key
-to be single quoted.
 - `boolean` _enclose_ If false, the object output won't have the openeing and
 closing brackets. 
 This is useful is you want to insert the output into an existing object.
