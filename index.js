@@ -76,7 +76,7 @@ function escape(str, quoteChar) {
 }
 
 function shouldQuote(key) {
-  return !/^[a-z0-9_]+$/i.test(key);
+  return !/^[a-z0-9_]+$/i.test(key)
 }
 
 function objectToSource(
@@ -97,7 +97,9 @@ function objectToSource(
       functionFormatter
     )
 
-    var literalKey = shouldQuote(key) ? quoteChar + escape(key) + quoteChar : key
+    var literalKey = shouldQuote(key)
+      ? quoteChar + escape(key) + quoteChar
+      : key
 
     var base = tabs(tabDepth + 1, tabChar) + literalKey + ': '
     return base + sourced
