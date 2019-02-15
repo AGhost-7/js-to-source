@@ -27,6 +27,8 @@ will be an empty function.
 - `string` _quoteChar_ This will specify what kind of character to use to
 escape keys in objects and what to use for strings. By default, this is a
 single quote.
+- `boolean` _trailingComma_ If true, will add a trailing comma to objects
+and arrays. Defaults to false.
 
 ## Overriding the default function serializer
 You can override the default formatter globally. A utility function is provided

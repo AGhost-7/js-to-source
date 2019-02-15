@@ -1,8 +1,9 @@
 'use strict'
 
-var fnToStr = require('./lib/fn-to-str')
+const fnToStr = require('./lib/fn-to-str')
+const escape = require('./lib/escape')
 
-function tabs(ln, tabChar) {
+function indent(ln, tabChar) {
   var str = ''
   for (var i = 0; i < ln; i++) str += tabChar
   return str
@@ -44,7 +45,7 @@ function mkFnFormatter(tabChar) {
     if (currentH < tabDepth) {
       var addTabs = tabDepth - currentH
       corrected = tail.map(function(line) {
-        return tabs(addTabs, tabChar)
+        return indent(addTabs, tabChar)
       })
     } else {
       // remove indentation.
@@ -57,117 +58,59 @@ function mkFnFormatter(tabChar) {
   }
 }
 
-const singleQuoteReg = new RegExp("'", 'g')
-const doubleQuoteReg = new RegExp('"', 'g')
-const backslashReg = new RegExp('[\\\\]', 'g')
-
-function escape(str, quoteChar) {
-  let escaped = str
-    .replace(backslashReg, '\\\\')
-    .replace(/\n/g, '\\n')
-    .replace(/\r/g, '\\r')
-
-  if (quoteChar === "'") {
-    escaped = escaped.replace(singleQuoteReg, "\\'")
-  } else {
-    escaped = escaped.replace(doubleQuoteReg, '\\"')
-  }
-  return escaped
-}
-
 function shouldQuote(key) {
   return !/^[a-z0-9_]+$/i.test(key)
 }
 
-function objectToSource(
-  data,
-  tabDepth,
-  brackets,
-  tabChar,
-  quoteChar,
-  functionFormatter
-) {
+function objectToSource(data, tabDepth, enclose, options) {
+  const { tabChar, quoteChar } = options
   var objListing = Object.keys(data).map(function(key) {
-    var sourced = toSource(
-      data[key],
-      tabDepth + 1,
-      true,
-      tabChar,
-      quoteChar,
-      functionFormatter
-    )
+    var sourced = toSource(data[key], tabDepth + 1, true, options)
 
     var literalKey = shouldQuote(key)
       ? quoteChar + escape(key) + quoteChar
       : key
 
-    var base = tabs(tabDepth + 1, tabChar) + literalKey + ': '
+    var base = indent(tabDepth + 1, tabChar) + literalKey + ': '
     return base + sourced
   })
 
   var inner = objListing.join(',\n')
-  if (brackets) {
-    return '{\n' + inner + '\n' + tabs(tabDepth, tabChar) + '}'
+  if (options.trailingComma) {
+    inner += ',\n'
+  }
+  if (enclose) {
+    return '{\n' + inner + '\n' + indent(tabDepth, tabChar) + '}'
   } else {
     return inner
   }
 }
 
-function arrayToSource(
-  data,
-  tabDepth,
-  brackets,
-  tabChar,
-  quoteChar,
-  functionFormatter
-) {
+function arrayToSource(data, tabDepth, enclose, options) {
+  const tabChar = options.tabChar
   var inner = data
     .map(function(part) {
-      var src = toSource(
-        part,
-        tabDepth + 1,
-        true,
-        tabChar,
-        quoteChar,
-        functionFormatter
-      )
-      return tabs(tabDepth + 1, tabChar) + src
+      var src = toSource(part, tabDepth + 1, true, options)
+      return indent(tabDepth + 1, tabChar) + src
     })
     .join(',\n')
 
-  if (brackets) {
-    return '[\n' + inner + '\n' + tabs(tabDepth, tabChar) + ']'
+  if (options.trailingComma) {
+    inner += ',\n'
+  }
+
+  if (enclose) {
+    return '[\n' + inner + '\n' + indent(tabDepth, tabChar) + ']'
   } else {
     return inner
   }
 }
 
-/**
- * Turns code back into source! Doesn't support functions or comments though.
- *
- * @param {string} data; This is the javascript value to convert back into source text.
- * @param {number} tabDepth; Is the indentation level that the value is starting at.
- * @param {boolean} brackets; If false, the object output won't have the openeing and closing
- * brackets. This is useful is you want to insert the output into an existing object.
- * @param {string} tabChar; specifies what to use for the height character. By default this will
- * use a single tab character. You can specify two, three, four spaces instead if you want (or
- * whatever you want).
- * @param {function} functionFormatter; If you want to parse functions, you will need to specify
- * this argument. The function will feed the tab height and the function object to the
- * formatter, from there you will need to source it and change the format to preference. If this
- * argument is not specified the default will be an empty function.
- */
-function toSource(
-  data,
-  tabDepth,
-  brackets,
-  tabChar,
-  quoteChar,
-  functionFormatter
-) {
+function toSource(data, tabDepth, enclose, options) {
+  const quoteChar = options.quoteChar
   switch (typeof data) {
     case 'function':
-      return functionFormatter(tabDepth, data)
+      return options.functionFormatter(tabDepth, data)
     case 'number':
     case 'undefined':
     case 'boolean':
@@ -176,7 +119,7 @@ function toSource(
       return quoteChar + escape(data, quoteChar) + quoteChar
     case 'object':
       if (Array.isArray(data)) {
-        return arrayToSource.apply(null, arguments)
+        return arrayToSource(data, tabDepth, enclose, options)
       } else if (data === null) {
         // null is an object lol.
         return 'null'
@@ -185,23 +128,25 @@ function toSource(
       } else if (data instanceof RegExp) {
         return data.toString()
       } else {
-        return objectToSource.apply(null, arguments)
+        return objectToSource(data, tabDepth, enclose, options)
       }
   }
 }
 
 // Wrap the toSource function to add in defaults.
 module.exports = function(data, options) {
-  options = options || {}
-  var defaulted = [
-    ['tabDepth', 0],
-    ['enclose', true],
-    ['tabChar', '\t'],
-    ['quoteChar', "'"],
-    ['functionFormatter', module.exports.defaultFnFormatter]
-  ].map(function(tuple) {
-    return options[tuple[0]] === undefined ? tuple[1] : options[tuple[0]]
-  })
+  options = Object.assign(
+    {
+      trailingComma: false,
+      tabDepth: 0,
+      enclose: true,
+      tabChar: '\t',
+      quoteChar: "'",
+      functionFormatter: module.exports.defaultFnFormatter
+    },
+    options || {}
+  )
+
   if (
     options.quoteChar &&
     options.quoteChar !== "'" &&
@@ -209,7 +154,7 @@ module.exports = function(data, options) {
   ) {
     throw new Error('Unsupported quote character ' + options.quoteChar)
   }
-  return toSource.apply(null, [data].concat(defaulted))
+  return toSource(data, options.tabDepth, options.enclose, options)
 }
 
 module.exports.defaultFnFormatter = defaultFnFormatter

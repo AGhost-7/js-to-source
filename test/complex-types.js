@@ -64,4 +64,16 @@ describe('complex types (arrays and objects)', function() {
     assert(output.indexOf('{\n\ta') === -1)
     contains(output, '\tc')
   })
+
+  it('supports trailing commas', function() {
+    const obj = {
+      one: ['two', 'three'],
+      four: 'five'
+    }
+    const output = toSource(obj, {
+      trailingComma: true
+    })
+    contains(output, `four: 'five',`)
+    contains(output, `'three',`)
+  })
 })
