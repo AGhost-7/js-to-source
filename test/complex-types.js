@@ -22,6 +22,18 @@ describe('complex types (arrays and objects)', function() {
     contains(output, 'b')
   })
 
+  it('trailing object', function() {
+    var trails = { a: 1 }
+    var output = toSource(trails, { trailingComma: true })
+    contains(output, '1,\n}')
+  })
+
+  it('trailing array', function() {
+    var trails = [1]
+    var output = toSource(trails, { trailingComma: true })
+    contains(output, '1,\n]')
+  })
+
   it('outputs nested objects', function() {
     var nested = {
       a: {

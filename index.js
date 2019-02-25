@@ -77,7 +77,7 @@ function objectToSource(data, tabDepth, enclose, options) {
 
   var inner = objListing.join(',\n')
   if (options.trailingComma) {
-    inner += ',\n'
+    inner += ','
   }
   if (enclose) {
     return '{\n' + inner + '\n' + indent(tabDepth, tabChar) + '}'
@@ -96,7 +96,7 @@ function arrayToSource(data, tabDepth, enclose, options) {
     .join(',\n')
 
   if (options.trailingComma) {
-    inner += ',\n'
+    inner += ','
   }
 
   if (enclose) {
