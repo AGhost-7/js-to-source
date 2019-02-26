@@ -88,4 +88,15 @@ describe('complex types (arrays and objects)', function() {
     contains(output, `four: 'five',`)
     contains(output, `'three',`)
   })
+
+  it('empty trailing', function() {
+    let output = toSource({}, { trailingComma: true })
+    assert.throws(() => {
+      contains(output, ',')
+    })
+    output = toSource([], { trailingComma: true })
+    assert.throws(() => {
+      contains(output, ',')
+    })
+  })
 })

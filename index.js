@@ -64,7 +64,9 @@ function shouldQuote(key) {
 
 function objectToSource(data, tabDepth, enclose, options) {
   const { tabChar, quoteChar } = options
+  let count = 0
   var objListing = Object.keys(data).map(function(key) {
+    count++
     var sourced = toSource(data[key], tabDepth + 1, true, options)
 
     var literalKey = shouldQuote(key)
@@ -76,7 +78,7 @@ function objectToSource(data, tabDepth, enclose, options) {
   })
 
   var inner = objListing.join(',\n')
-  if (options.trailingComma) {
+  if (options.trailingComma && count > 0) {
     inner += ','
   }
   if (enclose) {
@@ -88,14 +90,16 @@ function objectToSource(data, tabDepth, enclose, options) {
 
 function arrayToSource(data, tabDepth, enclose, options) {
   const tabChar = options.tabChar
+  let count = 0
   var inner = data
     .map(function(part) {
+      count++
       var src = toSource(part, tabDepth + 1, true, options)
       return indent(tabDepth + 1, tabChar) + src
     })
     .join(',\n')
 
-  if (options.trailingComma) {
+  if (options.trailingComma && count > 0) {
     inner += ','
   }
 
