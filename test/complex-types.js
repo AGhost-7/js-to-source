@@ -99,4 +99,9 @@ describe('complex types (arrays and objects)', function() {
       contains(output, ',')
     })
   })
+
+  it('escapes keys prefixed with a number', function() {
+    let output = toSource({ '1_test': 'foobar' })
+    contains(output, `'1_test'`)
+  })
 })

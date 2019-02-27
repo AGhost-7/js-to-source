@@ -59,7 +59,7 @@ function mkFnFormatter(tabChar) {
 }
 
 function shouldQuote(key) {
-  return !/^[a-z0-9_]+$/i.test(key)
+  return !/^[a-z$_][a-z0-9_$]*$/i.test(key)
 }
 
 function objectToSource(data, tabDepth, enclose, options) {
